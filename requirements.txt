@@ -1,0 +1,3 @@
+# install this requirements with `pip install -r requirements.txt`
+requests==2.9.1
+mock==1.3.0
