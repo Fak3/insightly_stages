@@ -97,6 +97,7 @@ class OpportynityTestCase(TestCase):
             ]
         })
         patch('insightly_stages.insightly_get', Mock(side_effect=self.fake_insightly.get)).start()
+        patch('insightly_stages.insightly_get_all', Mock(side_effect=self.fake_insightly.get)).start()
         patch('insightly_stages.insightly_put', Mock()).start()
 
     def tearDown(self):

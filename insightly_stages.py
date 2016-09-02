@@ -23,8 +23,25 @@ if not exists('insightly_stages_config.py'):
 import insightly_stages_config as config
 
 
+def insightly_get_all(url, auth):
+    """ Send GET request. Raise exception if response status code is not 200. """
+    results = []
+    skip = 0
+    while True:
+        response = requests.get('https://api.insight.ly/v2.2%s&skip=%d&count_total=true' % (url, skip), auth=auth)
+        if response.status_code != 200:
+            err = Exception('Insightly api GET error: Http status %s. Url:\n%s' % (response.status_code, url))
+            logging.critical(err)
+            raise err
+        results += json.loads(response.content)
+        if len(results) >= int(response.headers['X-Total-Count']):
+            break
+        skip += len(results)
+    return results
+
+
 def insightly_get(url, auth):
-    """ Send GET response. Raise exception if response status code is not 200. """
+    """ Send GET request. Raise exception if response status code is not 200. """
     response = requests.get('https://api.insight.ly/v2.2' + url, auth=auth)
     if response.status_code != 200:
         err = Exception('Insightly api GET error: Http status %s. Url:\n%s' % (response.status_code, url))
@@ -34,7 +51,7 @@ def insightly_get(url, auth):
 
 
 def insightly_put(url, auth, **kwargs):
-    """ Send PUT response. Raise exception if response status code is not 200. """
+    """ Send PUT request. Raise exception if response status code is not 200. """
     response = requests.put("https://api.insight.ly/v2.2" + url, auth=auth, **kwargs)
     if response.status_code != 200:
         err = Exception('Insightly api PUT error: Http status %s. Url:\n%s' % (response.status_code, url))
@@ -147,7 +164,7 @@ def process_opportunities_stages():
     last_time_stage_changed_id = fields_map['last_time_stage_changed'][0]['CUSTOM_FIELD_ID']
     days_in_current_stage_id = fields_map['days_in_current_stage'][0]['CUSTOM_FIELD_ID']
 
-    opportunities = insightly_get('/opportunities/Search?opportunity_state=OPEN', insightly_auth)
+    opportunities = insightly_get_all('/opportunities/Search?opportunity_state=OPEN', insightly_auth)
     stages = {x['STAGE_ID']: x for x in insightly_get('/PipelineStages', insightly_auth)}
 
     logging.info('%d opportunities found.' % len(opportunities))
