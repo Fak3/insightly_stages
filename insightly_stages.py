@@ -16,7 +16,12 @@ from textwrap import dedent
 
 import requests
 
-if not exists('insightly_stages_config.py'):
+
+def rpath(*args):
+    return join(dirname(__file__), *args)
+
+
+if not exists(rpath('insightly_stages_config.py')):
     print(u'*** Creating default config file insightly_stages_config.py')
     copyfile('insightly_stages_config.py.example', 'insightly_stages_config.py')
 
